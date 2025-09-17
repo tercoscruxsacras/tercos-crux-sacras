@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Terços Crux Sacras</title>
+<style>
+  /* ---------- Cores e base (azul bebê) ---------- */
+  :root{
+    --bg:#b3d9ff;
+    --header:#80c1ff;
+    --btn:#3399ff;
+    --btn-hover:#2673cc;
+    --card-bg:#ffffff;
+    --text:#222;
+    --accent:#0b62a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);}
+
+  /* ---------- Header ---------- */
+  header{background:var(--header);padding:16px 20px;color:#fff;display:flex;align-items:center;gap:20px;justify-content:space-between}
+  .logo{font-weight:800;font-size:20px}
+  .top-actions{display:flex;gap:10px;align-items:center}
+  .top-actions button{background:transparent;border:1px solid rgba(255,255,255,0.18);color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+
+  /* ---------- Main layout ---------- */
+  .main-wrap{padding:18px;max-width:1200px;margin:18px auto;display:grid;grid-template-columns:1fr;gap:18px}
+  .panel{background:var(--card-bg);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+
+  /* ---------- Home (initial) ---------- */
+  .home-center{text-align:center;padding:30px}
+
+  /* ---------- Store layout: grid with products + cart ---------- */
+  .store-grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+  @media(max-width:980px){ .store-grid{grid-template-columns:1fr} }
+
+  .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .product-card{background:#fff;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 6px 12px rgba(0,0,0,0.06);transition:transform .12s}
+  .product-card:hover{transform:translateY(-6px)}
+  .product-card img{width:100%;height:150px;object-fit:cover;border-radius:6px}
+  .product-card h3{margin:0;font-size:16px;color:var(--accent)}
+  .meta{font-size:13px;color:#555}
+  .price{font-weight:800;color:var(--btn);font-size:16px}
+  .product-card button{margin-top:auto;padding:10px;border-radius:8px;border:0;background:var(--btn);color:#fff;font-weight:700;cursor:pointer;transition:transform .08s,background .12s}
+  .product-card button:hover{background:var(--btn-hover)}
+  .product-card button:active{transform:scale(.97)}
+
+  /* ---------- Cart ---------- */
+  .cart{position:sticky;top:20px}
+  .cart h4{margin:0 0 8px 0}
+  .cart-list{max-height:320px;overflow:auto;padding:6px;border-radius:8px;border:1px dashed #eee}
+  .cart-item{display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px dashed #f0f0f0}
+  .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:6px}
+  .cart-item .title{font-weight:700}
+  .qty-controls{display:flex;gap:6px;align-items:center}
+  .small{font-size:13px;color:#666}
+
+  .checkout {margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .primary{background:var(--btn);color:#fff;padding:10px;border-radius:8px;border:0;font-weight:800;cursor:pointer}
+  .primary:hover{background:var(--btn-hover)}
+  .primary:active{transform:scale(.98)}
+
+  /* ---------- Admin form ---------- */
+  .form-row{display:flex;gap:8px;flex-wrap:wrap}
+  .form-row input[type="text"], .form-row input[type="number"], input[type="file"], input[type="email"], input[type="password"], input[type="tel"]{padding:8px;border-radius:8px;border:1px solid #ccc;width:100%}
+
+  /* ---------- Footer ---------- */
+  footer{margin-top:18px;background:var(--header);color:#fff;padding:14px;text-align:center;border-top-left-radius:12px;border-top-right-radius:12px}
+  footer a{color:#fff;font-weight:700}
+
+  /* ---------- Modal ---------- */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal .box{background:#fff;padding:18px;border-radius:10px;max-width:520px;width:92%}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">TERÇOS CRUX SACRAS</div>
+  <div class="top-actions">
+    <button id="btnHome">Início</button>
+    <button id="btnOwner">Proprietário</button>
+    <button id="btnStore">Loja</button>
+    <button id="btnCartTop">Carrinho (<span id="topCount">0</span>)</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- HOME (initial screen) -->
+  <section id="homePanel" class="panel home-center">
+    <h2>Bem-vindo(a) à Terços Crux Sacras</h2>
+    <p>Escolha como deseja entrar:</p>
+    <div style="margin-top:12px">
+      <button id="enterOwnerBtn">Entrar como Proprietário</button>
+      <button id="enterBuyerBtn">Entrar como Comprador</button>
+    </div>
+    <p class="small" style="margin-top:14px">Produtos adicionados ficam salvos e visíveis para todos (armazenamento local).</p>
+  </section>
+
+  <!-- OWNER LOGIN & PANEL -->
+  <section id="ownerPanel" class="panel hidden">
+    <h3>Login Proprietário</h3>
+    <div class="form-row" style="margin-top:8px">
+      <input id="ownerEmail" type="email" placeholder="E-mail (proprietário)">
+      <input id="ownerPass" type="password" placeholder="Senha">
+    </div>
+    <div style="margin-top:8px">
+      <button id="ownerLoginBtn" class="primary">Entrar</button>
+      <button id="ownerBackBtn">Voltar</button>
+    </div>
+
+    <!-- admin area -->
+    <div id="adminArea" class="hidden" style="margin-top:14px">
+      <h3>Adicionar Terço</h3>
+      <div class="form-row">
+        <input id="inpNome" type="text" placeholder="Nome do Terço">
+        <input id="inpModelo" type="text" placeholder="Modelo">
+      </div>
+      <div class="form-row" style="margin-top:8px">
+        <input id="inpSanto" type="text" placeholder="Santo">
+        <input id="inpPreco" type="number" placeholder="Preço (R$)" step="0.01">
+      </div>
+      <div style="margin-top:8px">
+        <input id="inpFoto" type="file" accept="image/*">
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px">
+        <button id="addProdBtn" class="primary">Adicionar produto</button>
+        <button id="adminLogoutBtn">Sair</button>
+      </div>
+
+      <hr style="margin:14px 0">
+      <h4>Produtos cadastrados (biblioteca)</h4>
+      <div id="adminList" style="max-height:220px;overflow:auto"></div>
+    </div>
+  </section>
+
+  <!-- STORE & CART -->
+  <section id="storePanel" class="panel hidden">
+    <div class="store-grid">
+      <!-- products -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3>Catálogo de Terços</h3>
+          <div>
+            <input id="searchInput" type="text" placeholder="Buscar (nome, modelo, santo)">
+            <button id="searchBtn">Buscar</button>
+            <button id="clearSearchBtn">Ver todos</button>
+          </div>
+        </div>
+        <div id="productsGrid" class="products-grid"></div>
+      </div>
+
+      <!-- cart -->
+      <aside class="cart panel">
+        <h4>Meu Carrinho</h4>
+        <div class="cart-list" id="cartList">Seu carrinho está vazio.</div>
+
+        <div style="margin-top:10px">
+          <label class="small">CEP para cálculo de frete:</label>
+          <input id="cepInput" type="tel" placeholder="Ex: 86083180" maxlength="8" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd">
+          <button id="calcFreteBtn" class="primary" style="width:100%;margin-top:8px">Calcular frete</button>
+          <div style="margin-top:8px" class="small">Frete: R$ <span id="freteVal">0.00</span></div>
+          <div class="small">Subtotal: R$ <span id="subtotalVal">0.00</span></div>
+          <div style="font-weight:900;margin-top:8px">Total: R$ <span id="totalVal">0.00</span></div>
+        </div>
+
+        <div class="checkout">
+          <button id="checkoutBtn" class="primary">Finalizar (PIX)</button>
+          <button id="emptyCartBtn" style="background:#fff;border:1px solid #ddd">Esvaziar carrinho</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div id="checkoutModal" class="modal hidden">
+  <div class="box">
+    <h3>Finalizar compra — PIX</h3>
+    <div id="orderSummary"></div>
+    <p class="small">Chave PIX (telefone): <strong>(43) 99151-6515</strong></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button id="closeCheckout">Fechar</button>
+      <button id="confirmPayment" class="primary">Confirmar (Simular pagamento)</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>Localização: CEP 86083-180 — Londrina, PR</div>
+  <div>Instagram: <a href="https://instagram.com/tercos_crux_sacras" target="_blank">@tercos_crux_sacras</a></div>
+  <div style="margin-top:6px;font-size:13px">© 2025 Terços Crux Sacras — Maria Vitória</div>
+</footer>
+
+<script>
+/* =========================
+   UTILITIES & STORAGE KEYS
+   ========================= */
+const PRODUCTS_KEY = "tc_products_v1";
+const CART_KEY = "tc_cart_v1";
+const OWNER_EMAIL = "tercoscruxsacras@gmail.com";
+const OWNER_PASS  = "08050227";
+const STORE_CEP = "86083180"; // base CEP para cálculo simples
+
+// helper money format
+const money = v => Number(v||0).toFixed(2);
+
+// generate id
+const genId = ()=> Math.random().toString(36).slice(2,10);
+
+/* =========================
+   INITIAL SAMPLE PRODUCTS (created only if none exist)
+   ========================= */
+function ensureInitialProducts(){
+  if(localStorage.getItem(PRODUCTS_KEY)) return;
+  const samples = [
+    { id:genId(), nome:"Terço de São Bento", modelo:"Tradicional", santo:"São Bento", preco:39.90,
+      foto:"https://i.imgur.com/7bXQb1W.jpg" },
+    { id:genId(), nome:"Terço Perolado", modelo:"Artesanal", santo:"Nossa Senhora", preco:49.90,
+      foto:"https://i.imgur.com/9Qx6q6y.jpg" },
+    { id:genId(), nome:"Terço de Madeira", modelo:"Rústico", santo:"Sagrado Coração", preco:29.00,
+      foto:"https://i.imgur.com/S3p6u3i.jpg" },
+    { id:genId(), nome:"Terço Luminoso", modelo:"Moderno", santo:"Santo Antônio", preco:59.90,
+      foto:"https://i.imgur.com/3rZk9kK.jpg" }
+  ];
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(samples));
+}
+
+/* =========================
+   READ / WRITE STORAGE
+   ========================= */
+function loadProducts(){ try{ return JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || []; }catch(e){return []} }
+function saveProducts(arr){ localStorage.setItem(PRODUCTS_KEY, JSON.stringify(arr)); }
+
+function loadCart(){ try{ return JSON.parse(localStorage.getItem(CART_KEY)) || []; }catch(e){return []} }
+function saveCart(arr){ localStorage.setItem(CART_KEY, JSON.stringify(arr)); }
+
+/* =========================
+   UI SELECTORS
+   ========================= */
+const homePanel = document.getElementById("homePanel");
+const ownerPanel = document.getElementById("ownerPanel");
+const storePanel = document.getElementById("storePanel");
+
+const enterOwnerBtn = document.getElementById("enterOwnerBtn");
+const enterBuyerBtn = document.getElementById("enterBuyerBtn");
+const btnOwner = document.getElementById("btnOwner");
+const btnStore = document.getElementById("btnStore");
+const btnHome = document.getElementById("btnHome");
+const btnCartTop = document.getElementById("btnCartTop");
+const topCount = document.getElementById("topCount");
+
+const ownerLoginBtn = document.getElementById("ownerLoginBtn");
+const ownerBackBtn = document.getElementById("ownerBackBtn");
+const adminArea = document.getElementById("adminArea");
+const ownerEmail = document.getElementById("ownerEmail");
+const ownerPass  = document.getElementById("ownerPass");
+const addProdBtn = document.getElementById("addProdBtn");
+const adminList = document.getElementById("adminList");
+
+const productsGrid = document.getElementById("productsGrid");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+const cartList = document.getElementById("cartList");
+const subtotalVal = document.getElementById("subtotalVal");
+const freteVal = document.getElementById("freteVal");
+const totalVal = document.getElementById("totalVal");
+const cepInput = document.getElementById("cepInput");
+const calcFreteBtn = document.getElementById("calcFreteBtn");
+const checkoutBtn = document.getElementById("checkoutBtn");
+const emptyCartBtn = document.getElementById("emptyCartBtn");
+
+const checkoutModal = document.getElementById("checkoutModal");
+const orderSummary = document.getElementById("orderSummary");
+const closeCheckout = document.getElementById("closeCheckout");
+const confirmPayment = document.getElementById("confirmPayment");
+
+const inpNome = document.getElementById("inpNome");
+const inpModelo = document.getElementById("inpModelo");
+const inpSanto = document.getElementById("inpSanto");
+const inpPreco = document.getElementById("inpPreco");
+const inpFoto = document.getElementById("inpFoto");
+
+/* =========================
+   NAVIGATION & EVENTS (buttons clickable)
+   ========================= */
+function showHome(){ homePanel.classList.remove("hidden"); ownerPanel.classList.add("hidden"); storePanel.classList.add("hidden"); }
+function showOwner(){ homePanel.classList.add("hidden"); ownerPanel.classList.remove("hidden"); storePanel.classList.add("hidden"); }
+function showStore(){ homePanel.classList.add("hidden"); ownerPanel.classList.add("hidden"); storePanel.classList.remove("hidden"); renderProducts(); renderCart(); }
+
+btnHome.addEventListener("click", showHome);
+btnOwner.addEventListener("click", showOwner);
+btnStore.addEventListener("click", showStore);
+enterOwnerBtn.addEventListener("click", showOwner);
+enterBuyerBtn.addEventListener("click", ()=>{ showStore(); });
+
+btnCartTop.addEventListener("click", ()=>{ showStore(); window.scrollTo({top:0,behavior:'smooth'}); });
+
+ownerBackBtn.addEventListener("click", showHome);
+
+/* Owner login */
+ownerLoginBtn.addEventListener("click", ()=>{
+  const em = ownerEmail.value.trim();
+  const pw = ownerPass.value.trim();
+  if(em === OWNER_EMAIL && pw === OWNER_PASS){
+    adminArea.classList.remove("hidden");
+    ownerEmail.value = ""; ownerPass.value = "";
+    renderAdminList();
+  } else {
+    alert("E-mail ou senha incorretos!");
+  }
+});
+
+/* Owner logout */
+document.getElementById("adminLogoutBtn").addEventListener("click", ()=>{
+  adminArea.classList.add("hidden");
+  showHome();
+});
+
+/* Add product (owner) with image upload -> store as base64 in localStorage */
+addProdBtn.addEventListener("click", ()=>{
+  const nome = inpNome.value.trim();
+  const modelo = inpModelo.value.trim();
+  const santo = inpSanto.value.trim();
+  const preco = parseFloat(inpPreco.value);
+  const file = inpFoto.files[0];
+
+  if(!nome || !modelo || !santo || isNaN(preco) || !file){
+    alert("Preencha todos os campos e escolha uma foto!");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const imgData = evt.target.result; // base64
+    const products = loadProducts();
+    products.push({
+      id: genId(),
+      nome, modelo, santo, preco: Number(preco),
+      foto: imgData
+    });
+    saveProducts(products);
+    // reset form
+    inpNome.value = ""; inpModelo.value = ""; inpSanto.value = ""; inpPreco.value = ""; inpFoto.value = "";
+    renderAdminList();
+    alert("Produto adicionado e salvo na biblioteca!");
+  };
+  reader.readAsDataURL(file);
+});
+
+/* Render admin list */
+function renderAdminList(){
+  const products = loadProducts();
+  adminList.innerHTML = "";
+  if(products.length === 0) adminList.innerHTML = "<p class='small'>Nenhum produto cadastrado.</p>";
+  products.forEach(p=>{
+    const el = document.createElement("div");
+    el.style.padding = "8px";
+    el.style.borderBottom = "1px dashed #eee";
+    el.innerHTML = `<strong>${escapeHtml(p.nome)}</strong> — ${escapeHtml(p.modelo)} — R$ ${money(p.preco)}
+      <div style="margin-top:6px"><button data-id="${p.id}" class="delProdBtn">Remover</button></div>`;
+    adminList.appendChild(el);
+  });
+  // attach remove events
+  Array.from(adminList.querySelectorAll(".delProdBtn")).forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      if(confirm("Remover este produto da biblioteca?")){
+        let prods = loadProducts().filter(x=>x.id !== id);
+        saveProducts(prods);
+        renderAdminList();
+        renderProducts();
+        renderCart();
+      }
+    });
+  });
+}
+
+/* =========================
+   PRODUCTS LIST & SEARCH
+   ========================= */
+searchBtn.addEventListener("click", ()=>{
+  renderProducts(searchInput.value.trim());
+});
+clearSearchBtn.addEventListener("click", ()=>{
+  searchInput.value = "";
+  renderProducts();
+});
+
+function renderProducts(filter){
+  const products = loadProducts();
+  let list = products;
+  if(filter && filter.length>0){
+    const q = filter.toLowerCase();
+    list = products.filter(p => (p.nome + " " + p.modelo + " " + p.santo).toLowerCase().includes(q));
+  }
+  productsGrid.innerHTML = "";
+  if(list.length === 0){ productsGrid.innerHTML = `<div class="panel">Nenhum produto encontrado.</div>`; return; }
+  list.forEach(p=>{
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <img src="${p.foto}" alt="${escapeHtml(p.nome)}" />
+      <h3>${escapeHtml(p.nome)}</h3>
+      <div class="meta">Modelo: ${escapeHtml(p.modelo)} • Santo: ${escapeHtml(p.santo)}</div>
+      <div class="price">R$ ${money(p.preco)}</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="addBtn" data-id="${p.id}">Adicionar ao carrinho</button>
+        <button class="viewBtn" data-id="${p.id}">Ver</button>
+      </div>
+    `;
+    productsGrid.appendChild(card);
+  });
+  // attach listeners
+  Array.from(productsGrid.querySelectorAll(".addBtn")).forEach(b=>{
+    b.addEventListener("click", ()=> addToCart(b.getAttribute("data-id")));
+  });
+  Array.from(productsGrid.querySelectorAll(".viewBtn")).forEach(b=>{
+    b.addEventListener("click", ()=> viewProduct(b.getAttribute("data-id")));
+  });
+}
+
+/* View product modal */
+function viewProduct(id){
+  const p = loadProducts().find(x=>x.id===id);
+  if(!p) return alert("Produto não encontrado");
+  // simple modal
+  const html = `
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <img src="${p.foto}" style="width:160px;height:220px;object-fit:cover;border-radius:8px" />
+      <div>
+        <h3 style="margin-top:0">${escapeHtml(p.nome)}</h3>
+        <p><b>Modelo:</b> ${escapeHtml(p.modelo)}</p>
+        <p><b>Santo:</b> ${escapeHtml(p.santo)}</p>
+        <p style="font-weight:900">R$ ${money(p.preco)}</p>
+        <div style="margin-top:12px">
+          <button id="viewAddBtn" class="primary">Adicionar ao carrinho</button>
+          <button id="viewCloseBtn">Fechar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  // create modal box
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `<div class="box">${html}</div>`;
+  document.body.appendChild(modal);
+  document.getElementById("viewCloseBtn").addEventListener("click", ()=> modal.remove());
+  document.getElementById("viewAddBtn").addEventListener("click", ()=>{
+    addToCart(id);
+    modal.remove();
+  });
+}
+
+/* =========================
+   CART LOGIC
+   ========================= */
+function addToCart(prodId){
+  const products = loadProducts();
+  const prod = products.find(p=>p.id === prodId);
+  if(!prod) return alert("Produto não encontrado");
+  let cart = loadCart();
+  const idx = cart.findIndex(i=>i.id === prodId);
+  if(idx === -1) cart.push({ id: prodId, qty: 1 });
+  else cart[idx].qty++;
+  saveCart(cart);
+  renderCart();
+  alert("Item adicionado ao carrinho!");
+}
+
+function renderCart(){
+  const cart = loadCart();
+  if(cart.length === 0){
+    cartList.innerHTML = "<div class='small'>Carrinho vazio</div>";
+    subtotalVal.innerText = money(0);
+    freteVal.innerText = money(0);
+    totalVal.innerText = money(0);
+    topCount.innerText = 0;
+    return;
+  }
+  const products = loadProducts();
+  cartList.innerHTML = "";
+  let subtotal = 0;
+  cart.forEach(item=>{
+    const p = products.find(x=>x.id===item.id);
+    if(!p) return;
+    const row = document.createElement("div");
+    row.className = "cart-item";
+    row.innerHTML = `
+      <img src="${p.foto}" alt="${escapeHtml(p.nome)}" />
+      <div style="flex:1">
+        <div class="title">${escapeHtml(p.nome)}</div>
+        <div class="small">R$ ${money(p.preco)} • Qtd: 
+          <span class="qty-controls" data-id="${p.id}">
+            <button class="decBtn" data-id="${p.id}">-</button>
+            <span class="qtyVal">${item.qty}</span>
+            <button class="incBtn" data-id="${p.id}">+</button>
+          </span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800">R$ ${money(p.preco * item.qty)}</div>
+        <div style="margin-top:8px"><button class="rmBtn" data-id="${p.id}">Remover</button></div>
+      </div>
+    `;
+    cartList.appendChild(row);
+    subtotal += p.preco * item.qty;
+  });
+  subtotalVal.innerText = money(subtotal);
+  // freight kept in freteVal variable (string)
+  const curFrete = parseFloat(freteVal.innerText) || 0;
+  totalVal.innerText = money(subtotal + curFrete);
+  topCount.innerText = cart.reduce((s,i)=>s+i.qty,0);
+
+  // attach inc/dec/remove
+  Array.from(cartList.querySelectorAll(".incBtn")).forEach(b=>b.addEventListener("click", ()=> changeQty(b.getAttribute("data-id"), 1)));
+  Array.from(cartList.querySelectorAll(".decBtn")).forEach(b=>b.addEventListener("click", ()=> changeQty(b.getAttribute("data-id"), -1)));
+  Array.from(cartList.querySelectorAll(".rmBtn")).forEach(b=>b.addEventListener("click", ()=> removeFromCart(b.getAttribute("data-id"))));
+}
+
+function changeQty(id, delta){
+  let cart = loadCart();
+  const idx = cart.findIndex(i=>i.id===id);
+  if(idx === -1) return;
+  cart[idx].qty += delta;
+  if(cart[idx].qty <= 0) cart.splice(idx,1);
+  saveCart(cart);
+  renderCart();
+}
+
+function removeFromCart(id){
+  let cart = loadCart();
+  cart = cart.filter(i=>i.id !== id);
+  saveCart(cart);
+  renderCart();
+}
+
+/* Empty cart */
+emptyCartBtn.addEventListener("click", ()=>{
+  if(confirm("Esvaziar o carrinho?")){ saveCart([]); renderCart(); alert("Carrinho esvaziado"); }
+});
+
+/* =========================
+   FRETE (simulado) - baseada em CEP
+   ========================= */
+calcFreteBtn.addEventListener("click", ()=>{
+  const cepRaw = cepInput.value.trim().replace(/\D/g,'');
+  if(cepRaw.length !== 8){ alert("Digite um CEP válido com 8 dígitos (ex: 86083180)."); return; }
+  const frete = calcularFrete(cepRaw);
+  freteVal.innerText = money(frete);
+  // update total
+  renderCart();
+  alert("Frete calculado: R$ " + money(frete));
+});
+
+function calcularFrete(cep){
+  // simples: base + distância em dígitos + qtd itens * 2.5
+  const base = 12;
+  const store = STORE_CEP;
+  let diff = 0;
+  for(let i=0;i<8;i++) diff += Math.abs(Number(cep[i]) - Number(store[i]||0));
+  const qty = loadCart().reduce((s,i)=>s+i.qty,0) || 0;
+  const value = base + diff * 0.45 + qty * 2.5;
+  return Number(value.toFixed(2));
+}
+
+/* =========================
+   CHECKOUT
+   ========================= */
+checkoutBtn.addEventListener("click", ()=>{
+  const cart = loadCart();
+  if(cart.length === 0){ alert("Carrinho vazio."); return; }
+  // build summary
+  const products = loadProducts();
+  let subtotal = 0;
+  let html = "<ul style='padding-left:18px'>";
+  cart.forEach(item=>{
+    const p = products.find(x=>x.id===item.id);
+    if(!p) return;
+    html += `<li>${escapeHtml(p.nome)} — Qtd: ${item.qty} — R$ ${money(p.preco*item.qty)}</li>`;
+    subtotal += p.preco * item.qty;
+  });
+  html += "</ul>";
+  const frete = parseFloat(freteVal.innerText) || 0;
+  const total = subtotal + frete;
+  orderSummary.innerHTML = `${html}
+    <p class='small'>Subtotal: R$ ${money(subtotal)}</p>
+    <p class='small'>Frete: R$ ${money(frete)}</p>
+    <p style='font-weight:900'>Total: R$ ${money(total)}</p>
+    <p class='small'>Chave PIX: <strong>(43) 99151-6515</strong></p>
+  `;
+  checkoutModal.classList.remove("hidden");
+});
+closeCheckout.addEventListener("click", ()=> checkoutModal.classList.add("hidden"));
+confirmPayment.addEventListener("click", ()=>{
+  // simulate confirmation
+  alert("Pagamento simulado realizado. Obrigado! (No site real, o cliente enviaria comprovante.)");
+  saveCart([]);
+  renderCart();
+  checkoutModal.classList.add("hidden");
+});
+
+/* =========================
+   UTILS
+   ========================= */
+function escapeHtml(s){ if(!s) return ""; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================
+   STARTUP
+   ========================= */
+ensureInitialProducts();
+renderProducts();
+renderAdminList();
+renderCart();
+showHome();
+
+</script>
+</body>
+</html>
